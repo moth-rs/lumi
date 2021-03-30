@@ -1,0 +1,16 @@
+[package]
+name = "lumi_macros"
+version = "0.0.0"
+authors = ["jamesbt365"]
+edition = "2024"
+description = "Internal macro implementation crate of lumi"
+repository = "https://github.com/moth-rs/lumi/"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["fold"] }
+quote = "1.0.9"
+proc-macro2 = "1.0.94"
+darling = "0.20"

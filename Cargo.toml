@@ -1,0 +1,44 @@
+[package]
+authors = ["jamesbt365"]
+edition = "2024"
+name = "lumi"
+version = "0.0.0"
+rust-version = "1.85.0"
+description = "A Discord bot framework for serenity"
+repository = "https://github.com/moth-rs/lumi/"
+
+[dependencies]
+tokio = { version = "1.25.1", default-features = false }
+futures-util = { version = "0.3.13", default-features = false }
+lumi_macros = { path = "macros", version = "0.0.0" }
+async-trait = { version = "0.1.48", default-features = false } 
+regex = { version = "1.6.0", default-features = false, features = ["std"] }
+tracing = { version = "0.1.40", features = ["log"] }
+derivative = "2.2.0"
+parking_lot = "0.12.1"
+trim-in-place = "0.1.7"
+indexmap = "2.2.6"
+
+[dependencies.serenity]
+default-features = false
+features = ["builder", "gateway", "model", "utils", "collector", "framework"]
+git = "https://github.com/serenity-rs/serenity"
+branch = "next"
+
+
+[features]
+default = ["serenity/rustls_backend", "cache", "chrono", "handle_panics"]
+chrono = ["serenity/chrono"]
+cache = ["serenity/cache"]
+# Enables support for handling panics inside commands via FrameworkError::CommandPanic.
+# This feature has no overhead and can always be enabled.
+# This feature exists because some users want to disable the mere possibility of catching panics at
+# build time for peace of mind.
+handle_panics = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_nightly)"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "doc_nightly"]

@@ -359,7 +359,7 @@ fn generate_command(mut inv: Invocation) -> Result<proc_macro2::TokenStream, dar
     Ok(quote::quote! {
         #[allow(clippy::str_to_string)]
         #function_visibility fn #function_ident #function_generics() -> ::lumi::Command<
-            <#ctx_type_with_static as lumi::_GetGenerics>::U,
+            <#ctx_type_with_static as lumi::_GetGenerics>::T,
             <#ctx_type_with_static as lumi::_GetGenerics>::E,
         > {
             use ::std::borrow::Cow;
@@ -401,7 +401,7 @@ fn generate_command(mut inv: Invocation) -> Result<proc_macro2::TokenStream, dar
                 parameters: vec![ #( #parameters ),* ],
                 custom_data: #custom_data,
 
-                has_modfier: #has_modifier,
+                has_modifier: #has_modifier,
 
                 aliases: Cow::Borrowed(&[ #( Cow::Borrowed(#aliases), )* ]),
                 invoke_on_edit: #invoke_on_edit,

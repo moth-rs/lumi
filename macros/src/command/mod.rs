@@ -49,6 +49,7 @@ pub struct CommandArgs {
     custom_data: Option<syn::Expr>,
 
     manual_cooldowns: Option<bool>,
+    has_modifier: bool,
 
     install_context: Option<syn::punctuated::Punctuated<syn::Ident, syn::Token![|]>>,
     interaction_context: Option<syn::punctuated::Punctuated<syn::Ident, syn::Token![|]>>,
@@ -258,7 +259,7 @@ fn generate_command(mut inv: Invocation) -> Result<proc_macro2::TokenStream, dar
         _ => {
             return Err(
                 syn::Error::new(inv.function.sig.span(), "expected a Context parameter").into(),
-            )
+            );
         }
     };
     // Needed because we're not allowed to have lifetimes in the hacky use case below
@@ -313,6 +314,8 @@ fn generate_command(mut inv: Invocation) -> Result<proc_macro2::TokenStream, dar
     let guild_only = inv.args.guild_only;
     let dm_only = inv.args.dm_only;
     let nsfw_only = inv.args.nsfw_only;
+
+    let has_modifier = inv.args.has_modifier;
 
     let install_context = &inv.install_context;
     let interaction_context = &inv.interaction_context;
@@ -397,6 +400,8 @@ fn generate_command(mut inv: Invocation) -> Result<proc_macro2::TokenStream, dar
                 on_error: #on_error,
                 parameters: vec![ #( #parameters ),* ],
                 custom_data: #custom_data,
+
+                has_modfier: #has_modifier,
 
                 aliases: Cow::Borrowed(&[ #( Cow::Borrowed(#aliases), )* ]),
                 invoke_on_edit: #invoke_on_edit,

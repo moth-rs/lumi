@@ -32,6 +32,8 @@ pub struct PrefixContext<'a, T, E> {
     pub invoked_command_name: &'a str,
     /// Entire argument string
     pub args: &'a str,
+    /// The modifier characters this command captured.
+    pub mod_chars: &'a str,
     /// Read-only reference to the framework
     ///
     /// Useful if you need the list of commands, for example for a custom help command

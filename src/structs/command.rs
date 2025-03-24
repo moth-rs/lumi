@@ -70,6 +70,9 @@ pub struct Command<T, E> {
     /// Will override [`crate::FrameworkOptions::manual_cooldowns`] allowing manual cooldowns
     /// on select commands.
     pub manual_cooldowns: Option<bool>,
+    /// If true, commands will be parsed from the start of the string and take the rest as a
+    /// modifier string
+    pub has_modifier: bool,
     /// Handles command cooldowns. Mainly for framework internal use
     pub cooldowns: std::sync::Mutex<crate::CooldownTracker>,
     /// Configuration for the [`crate::CooldownTracker`]

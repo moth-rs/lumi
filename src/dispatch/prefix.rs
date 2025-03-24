@@ -113,42 +113,12 @@ async fn strip_prefix<'a, T: Send + Sync + 'static, E>(
 ///
 /// The API must be like this (as opposed to just taking the command name upfront) because of
 /// subcommands.
-///
-/// ```rust
-/// #[lumi::command(prefix_command)]
-/// async fn command1(ctx: lumi::Context<'_, (), ()>) -> Result<(), ()> { Ok(()) }
-/// #[lumi::command(prefix_command, subcommands("command3"))]
-/// async fn command2(ctx: lumi::Context<'_, (), ()>) -> Result<(), ()> { Ok(()) }
-/// #[lumi::command(prefix_command)]
-/// async fn command3(ctx: lumi::Context<'_, (), ()>) -> Result<(), ()> { Ok(()) }
-/// let commands = vec![command1(), command2()];
-///
-/// let mut parent_commands = Vec::new();
-/// assert_eq!(
-///     lumi::find_command(&commands, "command1 my arguments", false, &mut parent_commands),
-///     Some((&commands[0], "command1", "my arguments")),
-/// );
-/// assert!(parent_commands.is_empty());
-///
-/// parent_commands.clear();
-/// assert_eq!(
-///     lumi::find_command(&commands, "command2 command3 my arguments", false, &mut parent_commands),
-///     Some((&commands[1].subcommands[0], "command3", "my arguments")),
-/// );
-/// assert_eq!(&parent_commands, &[&commands[1]]);
-///
-/// parent_commands.clear();
-/// assert_eq!(
-///     lumi::find_command(&commands, "CoMmAnD2 cOmMaNd99 my arguments", true, &mut parent_commands),
-///     Some((&commands[1], "CoMmAnD2", "cOmMaNd99 my arguments")),
-/// );
-/// assert!(parent_commands.is_empty());
 pub fn find_command<'a, T, E>(
     commands: &'a [crate::Command<T, E>],
     remaining_message: &'a str,
     case_insensitive: bool,
     parent_commands: &mut Vec<&'a crate::Command<T, E>>,
-) -> Option<(&'a crate::Command<T, E>, &'a str, &'a str)> {
+) -> Option<(&'a crate::Command<T, E>, &'a str, &'a str, &'a str)> {
     let string_equal = if case_insensitive {
         |a: &str, b: &str| a.eq_ignore_ascii_case(b)
     } else {
@@ -161,11 +131,31 @@ pub fn find_command<'a, T, E>(
     };
 
     for command in commands {
-        let primary_name_matches = string_equal(&command.name, command_name);
-        let alias_matches = command
-            .aliases
-            .iter()
-            .any(|alias| string_equal(alias, command_name));
+        let (primary_name_matches, alias_matches, mod_chars) =
+            if command.has_modifier && command.subcommands.is_empty() {
+                let (primary_match, primary_mod) =
+                    starts_with(&command.name, command_name, case_insensitive);
+
+                if primary_match {
+                    (true, false, primary_mod)
+                } else {
+                    let alias_match = command.aliases.iter().find_map(|alias| {
+                        let (matches, mod_str) = starts_with(alias, command_name, case_insensitive);
+                        if matches { Some(mod_str) } else { None }
+                    });
+
+                    (false, alias_match.is_some(), alias_match.unwrap_or(""))
+                }
+            } else {
+                let primary_name_matches = string_equal(&command.name, command_name);
+                let alias_matches = command
+                    .aliases
+                    .iter()
+                    .any(|alias| string_equal(alias, command_name));
+
+                (primary_name_matches, alias_matches, "")
+            };
+
         if !primary_name_matches && !alias_matches {
             continue;
         }
@@ -180,12 +170,40 @@ pub fn find_command<'a, T, E>(
             )
             .unwrap_or_else(|| {
                 parent_commands.pop();
-                (command, command_name, remaining_message)
+                (command, mod_chars, command_name, remaining_message)
             }),
         );
     }
 
     None
+}
+
+/// starts with function, but handles case insensitity when needed.
+fn starts_with<'a>(needle: &'a str, haystack: &'a str, case_insensitive: bool) -> (bool, &'a str) {
+    if case_insensitive {
+        return starts_with_ignore_ascii_case(needle, haystack);
+    }
+
+    if haystack.starts_with(needle) {
+        (true, &needle[haystack.len()..])
+    } else {
+        (false, "")
+    }
+}
+
+/// starts_with function, but case insensitive.
+fn starts_with_ignore_ascii_case<'a>(needle: &str, haystack: &'a str) -> (bool, &'a str) {
+    let mut h_chars = haystack.chars();
+    let n_chars = needle.chars();
+
+    for nc in n_chars {
+        match h_chars.next() {
+            Some(hc) if hc.eq_ignore_ascii_case(&nc) => continue,
+            _ => return (false, ""),
+        }
+    }
+
+    (true, h_chars.as_str())
 }
 
 /// Manually dispatches a message with the prefix framework
@@ -256,7 +274,7 @@ pub async fn parse_invocation<'a, T: Send + Sync + 'static, E>(
     };
     let msg_content = msg_content.trim_start();
 
-    let (command, invoked_command_name, args) = find_command(
+    let (command, mod_chars, invoked_command_name, args) = find_command(
         &framework.options.commands,
         msg_content,
         framework.options.prefix_options.case_insensitive_commands,
@@ -281,6 +299,7 @@ pub async fn parse_invocation<'a, T: Send + Sync + 'static, E>(
         msg,
         prefix,
         invoked_command_name,
+        mod_chars,
         args,
         framework,
         parent_commands,

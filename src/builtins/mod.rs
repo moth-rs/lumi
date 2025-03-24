@@ -6,12 +6,10 @@
 mod register;
 pub use register::*;
 
-#[cfg(feature = "chrono")]
 mod paginate;
-#[cfg(feature = "chrono")]
 pub use paginate::*;
 
-use crate::{serenity_prelude as serenity, serenity_prelude::CreateAllowedMentions, CreateReply};
+use crate::{CreateReply, serenity_prelude as serenity, serenity_prelude::CreateAllowedMentions};
 
 /// An error handler that logs errors either via the [`tracing`] crate or via a Discord message. Set
 /// up a logger like tracing subscriber
@@ -247,7 +245,6 @@ pub async fn autocomplete_command<'a, U: Send + Sync + 'static, E>(
 /// > I am currently in three servers!
 /// > - **A public server** (7123 members)
 /// > - [3 private servers with 456 members total]
-#[cfg(feature = "cache")]
 pub async fn servers<U: Send + Sync + 'static, E>(
     ctx: crate::Context<'_, U, E>,
 ) -> Result<(), serenity::Error> {

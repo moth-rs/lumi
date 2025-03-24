@@ -19,8 +19,6 @@ mod builder;
 ///
 /// You can build a bot without [`Framework`]: see the `manual_dispatch` example in the repository
 pub struct Framework<U, E> {
-    /// Stores bot ID. Is initialized on first Ready event
-    bot_id: std::sync::OnceLock<serenity::UserId>,
     /// Stores the framework options
     options: crate::FrameworkOptions<U, E>,
 
@@ -51,7 +49,6 @@ impl<U, E> Framework<U, E> {
         E: Send + 'static,
     {
         Self {
-            bot_id: std::sync::OnceLock::new(),
             edit_tracker_purge_task: None,
             options,
         }
@@ -100,35 +97,12 @@ impl<U: Send + Sync + 'static, E: Send + Sync> serenity::Framework for Framework
     }
 
     async fn dispatch(&self, ctx: &serenity::Context, event: &serenity::FullEvent) {
-        raw_dispatch_event(self, ctx, event).await
+        let framework = crate::FrameworkContext {
+            serenity_context: ctx,
+            options: &self.options,
+        };
+        crate::dispatch_event(framework, event).await;
     }
-}
-
-/// If the incoming event is Ready, this method sets up [`Framework::bot_id`].
-/// Otherwise, it forwards the event to [`crate::dispatch_event`]
-async fn raw_dispatch_event<U, E>(
-    framework: &Framework<U, E>,
-    serenity_context: &serenity::Context,
-    event: &serenity::FullEvent,
-) where
-    U: Send + Sync + 'static,
-{
-    if let serenity::FullEvent::Ready { data_about_bot, .. } = event {
-        let _: Result<_, _> = framework.bot_id.set(data_about_bot.user.id);
-    }
-
-    #[cfg(not(feature = "cache"))]
-    let bot_id = *framework
-        .bot_id
-        .get()
-        .expect("bot ID not set even though we awaited Ready");
-    let framework = crate::FrameworkContext {
-        #[cfg(not(feature = "cache"))]
-        bot_id,
-        serenity_context,
-        options: &framework.options,
-    };
-    crate::dispatch_event(framework, event).await;
 }
 
 /// Traverses commands recursively and sets [`crate::Command::qualified_name`] to its actual value

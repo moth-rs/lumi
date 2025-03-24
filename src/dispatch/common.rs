@@ -21,14 +21,11 @@ async fn check_permissions_and_cooldown_single<'a, U: Send + Sync + 'static, E>(
         match ctx.guild_id() {
             None => return Err(crate::FrameworkError::GuildOnly { ctx }),
             Some(guild_id) => {
-                #[cfg(feature = "cache")]
                 if ctx.framework().options().require_cache_for_guild_check
                     && ctx.cache().guild(guild_id).is_none()
                 {
                     return Err(crate::FrameworkError::GuildOnly { ctx });
                 }
-                #[cfg(not(feature = "cache"))]
-                let _ = guild_id;
             }
         }
     }
@@ -90,13 +87,13 @@ async fn check_permissions_and_cooldown_single<'a, U: Send + Sync + 'static, E>(
         match check(ctx).await {
             Ok(true) => {}
             Ok(false) => {
-                return Err(crate::FrameworkError::CommandCheckFailed { ctx, error: None })
+                return Err(crate::FrameworkError::CommandCheckFailed { ctx, error: None });
             }
             Err(error) => {
                 return Err(crate::FrameworkError::CommandCheckFailed {
                     error: Some(error),
                     ctx,
-                })
+                });
             }
         }
     }

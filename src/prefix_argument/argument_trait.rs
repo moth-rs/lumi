@@ -2,7 +2,7 @@
 //!
 //! Many of these implementations defer to [`serenity::ArgumentConvert`].
 
-use super::{pop_string, InvalidBool, MissingAttachment, TooFewArguments};
+use super::{InvalidBool, MissingAttachment, TooFewArguments, pop_string};
 use crate::serenity_prelude as serenity;
 
 /// The result of `<T as PopArgument>::pop_from`.
@@ -133,5 +133,5 @@ impl_popargument_via_argumentconvert!(
     serenity::EmojiId, serenity::Emoji,
     serenity::RoleId, serenity::Role
 );
-#[cfg(feature = "cache")]
+
 impl_popargument_via_argumentconvert!(serenity::GuildId, serenity::Guild);

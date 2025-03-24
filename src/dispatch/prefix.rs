@@ -88,7 +88,14 @@ async fn strip_prefix<'a, U: Send + Sync + 'static, E>(
             msg.content
                 .strip_prefix("<@")?
                 .trim_start_matches('!')
-                .strip_prefix(&framework.bot_id().to_string())?
+                .strip_prefix(
+                    &framework
+                        .serenity_context
+                        .cache
+                        .current_user()
+                        .id
+                        .to_string(),
+                )?
                 .strip_prefix('>')
         })() {
             let mention_prefix =
@@ -229,7 +236,7 @@ pub async fn parse_invocation<'a, U: Send + Sync + 'static, E>(
     }
 
     // Check if we're allowed to execute our own messages
-    if framework.bot_id() == msg.author.id
+    if framework.serenity_context.cache.current_user().id == msg.author.id
         && !framework.options.prefix_options.execute_self_messages
     {
         return Ok(None);

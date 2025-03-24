@@ -15,9 +15,6 @@ use crate::serenity_prelude as serenity;
 pub struct FrameworkContext<'a, U, E> {
     /// Serenity's context
     pub serenity_context: &'a serenity::Context,
-    /// User ID of this bot, available through serenity_context if cache is enabled.
-    #[cfg(not(feature = "cache"))]
-    pub bot_id: serenity::UserId,
     /// Framework configuration
     pub options: &'a crate::FrameworkOptions<U, E>,
     // deliberately not non exhaustive because you need to create FrameworkContext from scratch
@@ -30,16 +27,6 @@ impl<U, E> Clone for FrameworkContext<'_, U, E> {
     }
 }
 impl<'a, U: Send + Sync + 'static, E> FrameworkContext<'a, U, E> {
-    /// Returns the user ID of the bot.
-    pub fn bot_id(&self) -> serenity::UserId {
-        #[cfg(feature = "cache")]
-        let bot_id = self.serenity_context.cache.current_user().id;
-        #[cfg(not(feature = "cache"))]
-        let bot_id = self.bot_id;
-
-        bot_id
-    }
-
     /// Returns the stored framework options, including commands.
     ///
     /// This function exists for API compatiblity with [`crate::Framework`]. On this type, you can

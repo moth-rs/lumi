@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::{serenity_prelude as serenity, CommandInteractionType};
+use crate::{CommandInteractionType, serenity_prelude as serenity};
 
 // needed for proc macro
 #[doc(hidden)]
@@ -215,7 +215,6 @@ context_methods! {
     }
 
     /// Return the guild channel of this context, if we are inside a guild.
-    #[cfg(feature = "cache")]
     await (guild_channel self)
     (pub async fn guild_channel(self) -> Option<serenity::GuildChannel>) {
         self.channel_id().to_guild_channel(self.serenity_context(), self.guild_id()).await.ok()
@@ -223,7 +222,6 @@ context_methods! {
 
     // Doesn't fit in with the rest of the functions here but it's convenient
     /// Return the guild of this context, if we are inside a guild.
-    #[cfg(feature = "cache")]
     (guild self)
     (pub fn guild(self) -> Option<serenity::GuildRef<'a>>) {
         self.guild_id()?.to_guild_cached(self.cache())
@@ -238,7 +236,6 @@ context_methods! {
     /// Returns None if in DMs, or if the guild HTTP request fails
     await (partial_guild self)
     (pub async fn partial_guild(self) -> Option<serenity::PartialGuild>) {
-        #[cfg(feature = "cache")]
         if let Some(guild) = self.guild() {
             return Some(guild.clone().into());
         }
@@ -288,7 +285,6 @@ context_methods! {
     }
 
     /// Return a ID that uniquely identifies this command invocation.
-    #[cfg(feature = "chrono")]
     (id self)
     (pub fn id(self) -> u64) {
         match self {
@@ -489,7 +485,6 @@ context_methods! {
     /// Returns serenity's cache which stores various useful data received from the gateway
     ///
     /// Shorthand for [`.serenity_context().cache`](serenity::Context::cache)
-    #[cfg(feature = "cache")]
     (cache self)
     (pub fn cache(self) -> &'a serenity::Cache) {
         &self.serenity_context().cache
@@ -583,7 +578,6 @@ impl<'a, U, E> Context<'a, U, E> {
 /// to serenity API functions.
 macro_rules! context_trait_impls {
     ($($type:tt)*) => {
-        #[cfg(feature = "cache")]
         impl<U: Send + Sync + 'static, E> AsRef<serenity::Cache> for $($type)*<'_, U, E> {
             fn as_ref(&self) -> &serenity::Cache {
                 &self.serenity_context().cache
@@ -606,7 +600,6 @@ macro_rules! context_trait_impls {
                 &self.serenity_context().http
             }
 
-            #[cfg(feature = "cache")]
             fn cache(&self) -> Option<&std::sync::Arc<serenity::Cache>> {
                 Some(&self.serenity_context().cache)
             }

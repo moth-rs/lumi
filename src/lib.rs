@@ -395,12 +395,6 @@ pub use {
     prefix_argument::*, reply::*, slash_argument::*, structs::*, track_edits::*,
 };
 
-/// See [`builtins`]
-#[deprecated = "`samples` module was renamed to `builtins`"]
-pub mod samples {
-    pub use crate::builtins::*;
-}
-
 #[doc(hidden)]
 pub use {async_trait::async_trait, futures_util};
 

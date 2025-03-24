@@ -257,13 +257,6 @@ pub fn choice_parameter(input: TokenStream) -> TokenStream {
     }
 }
 
-/// See [`ChoiceParameter`]
-#[deprecated = "renamed to ChoiceParameter"]
-#[proc_macro_derive(SlashChoiceParameter, attributes(name))]
-pub fn slash_choice_parameter(input: TokenStream) -> TokenStream {
-    choice_parameter(input)
-}
-
 /// See `Modal` trait documentation
 #[proc_macro_derive(
     Modal,

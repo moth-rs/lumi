@@ -173,14 +173,6 @@ context_methods! {
         }
     }
 
-    /// See [`Self::serenity_context`].
-    #[deprecated = "lumi::Context can now be passed directly into most serenity functions. Otherwise, use `.serenity_context()` now"]
-    #[allow(deprecated)]
-    (discord self)
-    (pub fn discord(self) -> &'a serenity::Context) {
-        self.serenity_context()
-    }
-
     /// Returns a view into data stored by the framework, like configuration
     (framework self)
     (pub fn framework(self) -> crate::FrameworkContext<'a, U, E>) {

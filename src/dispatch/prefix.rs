@@ -5,8 +5,8 @@ use crate::serenity_prelude as serenity;
 /// Checks if this message is a bot invocation by attempting to strip the prefix
 ///
 /// Returns tuple of stripped prefix and rest of the message, if any prefix matches
-async fn strip_prefix<'a, U: Send + Sync + 'static, E>(
-    framework: crate::FrameworkContext<'a, U, E>,
+async fn strip_prefix<'a, T: Send + Sync + 'static, E>(
+    framework: crate::FrameworkContext<'a, T, E>,
     msg: &'a serenity::Message,
 ) -> Option<(&'a str, &'a str)> {
     let partial_ctx = crate::PartialContext {
@@ -143,12 +143,12 @@ async fn strip_prefix<'a, U: Send + Sync + 'static, E>(
 ///     Some((&commands[1], "CoMmAnD2", "cOmMaNd99 my arguments")),
 /// );
 /// assert!(parent_commands.is_empty());
-pub fn find_command<'a, U, E>(
-    commands: &'a [crate::Command<U, E>],
+pub fn find_command<'a, T, E>(
+    commands: &'a [crate::Command<T, E>],
     remaining_message: &'a str,
     case_insensitive: bool,
-    parent_commands: &mut Vec<&'a crate::Command<U, E>>,
-) -> Option<(&'a crate::Command<U, E>, &'a str, &'a str)> {
+    parent_commands: &mut Vec<&'a crate::Command<T, E>>,
+) -> Option<(&'a crate::Command<T, E>, &'a str, &'a str)> {
     let string_equal = if case_insensitive {
         |a: &str, b: &str| a.eq_ignore_ascii_case(b)
     } else {
@@ -189,13 +189,13 @@ pub fn find_command<'a, U, E>(
 }
 
 /// Manually dispatches a message with the prefix framework
-pub async fn dispatch_message<'a, U: Send + Sync + 'static, E>(
-    framework: crate::FrameworkContext<'a, U, E>,
+pub async fn dispatch_message<'a, T: Send + Sync + 'static, E>(
+    framework: crate::FrameworkContext<'a, T, E>,
     msg: &'a serenity::Message,
     trigger: crate::MessageDispatchTrigger,
     invocation_data: &'a tokio::sync::Mutex<Box<dyn std::any::Any + Send + Sync>>,
-    parent_commands: &'a mut Vec<&'a crate::Command<U, E>>,
-) -> Result<(), crate::FrameworkError<'a, U, E>> {
+    parent_commands: &'a mut Vec<&'a crate::Command<T, E>>,
+) -> Result<(), crate::FrameworkError<'a, T, E>> {
     if let Some(ctx) =
         parse_invocation(framework, msg, trigger, invocation_data, parent_commands).await?
     {
@@ -223,13 +223,13 @@ pub async fn dispatch_message<'a, U: Send + Sync + 'static, E>(
 /// Returns `Ok(None)` if the message does not look like a command invocation.
 /// Returns `Err(...)` if the message _does_ look like a command invocation, but cannot be
 /// fully parsed.
-pub async fn parse_invocation<'a, U: Send + Sync + 'static, E>(
-    framework: crate::FrameworkContext<'a, U, E>,
+pub async fn parse_invocation<'a, T: Send + Sync + 'static, E>(
+    framework: crate::FrameworkContext<'a, T, E>,
     msg: &'a serenity::Message,
     trigger: crate::MessageDispatchTrigger,
     invocation_data: &'a tokio::sync::Mutex<Box<dyn std::any::Any + Send + Sync>>,
-    parent_commands: &'a mut Vec<&'a crate::Command<U, E>>,
-) -> Result<Option<crate::PrefixContext<'a, U, E>>, crate::FrameworkError<'a, U, E>> {
+    parent_commands: &'a mut Vec<&'a crate::Command<T, E>>,
+) -> Result<Option<crate::PrefixContext<'a, T, E>>, crate::FrameworkError<'a, T, E>> {
     // Check if we're allowed to invoke from bot messages
     if msg.author.bot() && framework.options.prefix_options.ignore_bots {
         return Ok(None);
@@ -294,9 +294,9 @@ pub async fn parse_invocation<'a, U: Send + Sync + 'static, E>(
 
 /// Given an existing parsed command invocation from [`parse_invocation`], run it, including all the
 /// before and after code like checks and built in filters from edit tracking
-pub async fn run_invocation<U: Send + Sync + 'static, E>(
-    ctx: crate::PrefixContext<'_, U, E>,
-) -> Result<(), crate::FrameworkError<'_, U, E>> {
+pub async fn run_invocation<T: Send + Sync + 'static, E>(
+    ctx: crate::PrefixContext<'_, T, E>,
+) -> Result<(), crate::FrameworkError<'_, T, E>> {
     // Check if we should disregard this invocation if it was triggered by an edit
     if ctx.trigger == crate::MessageDispatchTrigger::MessageEdit && !ctx.command.invoke_on_edit {
         return Ok(());

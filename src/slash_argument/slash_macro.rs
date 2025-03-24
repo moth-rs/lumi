@@ -43,10 +43,10 @@ impl SlashArgError {
         Self::CommandStructureMismatch { description }
     }
 
-    pub fn to_framework_error<U, E>(
+    pub fn to_framework_error<T, E>(
         self,
-        ctx: crate::ApplicationContext<'_, U, E>,
-    ) -> crate::FrameworkError<'_, U, E> {
+        ctx: crate::ApplicationContext<'_, T, E>,
+    ) -> crate::FrameworkError<'_, T, E> {
         match self {
             Self::CommandStructureMismatch { description } => {
                 crate::FrameworkError::CommandStructureMismatch { ctx, description }

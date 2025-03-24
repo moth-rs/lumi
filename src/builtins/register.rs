@@ -16,16 +16,16 @@ use crate::serenity_prelude::{self as serenity, CollectComponentInteractions};
 /// serenity::Command::set_global_commands(ctx.http(), &create_commands).await?;
 /// # Ok(()) }
 /// ```
-pub fn create_application_commands<U, E>(
-    commands: &[crate::Command<U, E>],
+pub fn create_application_commands<T, E>(
+    commands: &[crate::Command<T, E>],
 ) -> Vec<serenity::CreateCommand<'static>> {
     /// We decided to extract context menu commands recursively, despite the subcommand hierarchy
     /// not being preserved. Because it's more confusing to just silently discard context menu
     /// commands if they're not top-level commands.
     /// https://discord.com/channels/381880193251409931/919310428344029265/947970605985189989
-    fn recursively_add_context_menu_commands<U, E>(
+    fn recursively_add_context_menu_commands<T, E>(
         builder: &mut Vec<serenity::CreateCommand<'static>>,
-        command: &crate::Command<U, E>,
+        command: &crate::Command<T, E>,
     ) {
         if let Some(context_menu_command) = command.create_as_context_menu_command() {
             builder.push(context_menu_command);
@@ -49,9 +49,9 @@ pub fn create_application_commands<U, E>(
 ///
 /// Thin wrapper around [`create_application_commands`] that funnels the returned builder into
 /// [`serenity::Command::set_global_commands`].
-pub async fn register_globally<U, E>(
+pub async fn register_globally<T, E>(
     http: &serenity::Http,
-    commands: &[crate::Command<U, E>],
+    commands: &[crate::Command<T, E>],
 ) -> Result<(), serenity::Error> {
     let builder = create_application_commands(commands);
     serenity::Command::set_global_commands(http, &builder).await?;
@@ -62,9 +62,9 @@ pub async fn register_globally<U, E>(
 ///
 /// Thin wrapper around [`create_application_commands`] that funnels the returned builder into
 /// [`serenity::GuildId::set_commands`].
-pub async fn register_in_guild<U, E>(
+pub async fn register_in_guild<T, E>(
     http: &serenity::Http,
-    commands: &[crate::Command<U, E>],
+    commands: &[crate::Command<T, E>],
     guild_id: serenity::GuildId,
 ) -> Result<(), serenity::Error> {
     let builder = create_application_commands(commands);
@@ -85,8 +85,8 @@ pub async fn register_in_guild<U, E>(
 ///
 /// Run with no arguments to register in guild, run with argument "global" to register globally.
 /// ```
-pub async fn register_application_commands<U: Send + Sync + 'static, E>(
-    ctx: crate::Context<'_, U, E>,
+pub async fn register_application_commands<T: Send + Sync + 'static, E>(
+    ctx: crate::Context<'_, T, E>,
     global: bool,
 ) -> Result<(), serenity::Error> {
     let is_bot_owner = ctx.framework().options().owners.contains(&ctx.author().id);
@@ -148,8 +148,8 @@ pub async fn register_application_commands<U: Send + Sync + 'static, E>(
 /// ```
 ///
 /// Which you can call like any prefix command, for example `@your_bot register`.
-pub async fn register_application_commands_buttons<U: Send + Sync + 'static, E>(
-    ctx: crate::Context<'_, U, E>,
+pub async fn register_application_commands_buttons<T: Send + Sync + 'static, E>(
+    ctx: crate::Context<'_, T, E>,
 ) -> Result<(), serenity::Error> {
     let create_commands = create_application_commands(&ctx.framework().options().commands);
     let num_commands = create_commands.len();

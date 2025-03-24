@@ -5,14 +5,14 @@ use crate::{PrefixContext, serenity_prelude as serenity};
 use crate::dispatch::permissions::PermissionsInfo;
 
 /// Gets the permissions of the ctx author and the bot.
-pub(in crate::dispatch::permissions) async fn get_author_and_bot_permissions<U, E>(
-    ctx: PrefixContext<'_, U, E>,
+pub(in crate::dispatch::permissions) async fn get_author_and_bot_permissions<T, E>(
+    ctx: PrefixContext<'_, T, E>,
     guild_id: serenity::GuildId,
     skip_author: bool,
     skip_bot: bool,
 ) -> Option<PermissionsInfo>
 where
-    U: Send + Sync + 'static,
+    T: Send + Sync + 'static,
 {
     // Should only fail if the guild is not cached, which is fair to bail on.
     let guild = ctx.cache().guild(guild_id)?;

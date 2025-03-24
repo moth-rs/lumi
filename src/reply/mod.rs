@@ -92,10 +92,10 @@ impl ReplyHandle<'_> {
     /// Edits the message that this [`ReplyHandle`] points to
     // TODO: return the edited Message object?
     // TODO: should I eliminate the ctx parameter by storing it in self instead? Would infect
-    //  ReplyHandle with <U, E> type parameters
-    pub async fn edit<'a, U: Send + Sync + 'static, E>(
+    //  ReplyHandle with <T, E> type parameters
+    pub async fn edit<'a, T: Send + Sync + 'static, E>(
         &self,
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
         builder: CreateReply<'a>,
     ) -> Result<(), serenity::Error> {
         let reply = ctx.reply_builder(builder);
@@ -139,9 +139,9 @@ impl ReplyHandle<'_> {
     }
 
     /// Deletes this message
-    pub async fn delete<U: Send + Sync + 'static, E>(
+    pub async fn delete<T: Send + Sync + 'static, E>(
         &self,
-        ctx: crate::Context<'_, U, E>,
+        ctx: crate::Context<'_, T, E>,
     ) -> Result<(), serenity::Error> {
         match &self.0 {
             ReplyHandleInner::Prefix(msg) => msg.delete(ctx.http(), None).await?,

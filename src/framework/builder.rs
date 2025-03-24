@@ -3,16 +3,16 @@
 /// A builder to configure a framework.
 ///
 /// If [`Self::options`] is missing, the builder will panic on start.
-pub struct FrameworkBuilder<U, E> {
+pub struct FrameworkBuilder<T, E> {
     /// Framework options
-    options: Option<crate::FrameworkOptions<U, E>>,
+    options: Option<crate::FrameworkOptions<T, E>>,
     /// List of framework commands
-    commands: Vec<crate::Command<U, E>>,
+    commands: Vec<crate::Command<T, E>>,
     /// See [`Self::initialize_owners()`]
     initialize_owners: bool,
 }
 
-impl<U, E> Default for FrameworkBuilder<U, E> {
+impl<T, E> Default for FrameworkBuilder<T, E> {
     fn default() -> Self {
         Self {
             options: Default::default(),
@@ -22,10 +22,10 @@ impl<U, E> Default for FrameworkBuilder<U, E> {
     }
 }
 
-impl<U, E> FrameworkBuilder<U, E> {
+impl<T, E> FrameworkBuilder<T, E> {
     /// Configure framework options
     #[must_use]
-    pub fn options(mut self, options: crate::FrameworkOptions<U, E>) -> Self {
+    pub fn options(mut self, options: crate::FrameworkOptions<T, E>) -> Self {
         self.options = Some(options);
         self
     }
@@ -42,9 +42,9 @@ impl<U, E> FrameworkBuilder<U, E> {
     /// Build the framework with the specified configuration.
     ///
     /// For more information, see [`FrameworkBuilder`]
-    pub fn build(self) -> crate::Framework<U, E>
+    pub fn build(self) -> crate::Framework<T, E>
     where
-        U: Send + Sync + 'static + 'static,
+        T: Send + Sync + 'static + 'static,
         E: Send + 'static,
     {
         let mut options = self.options.expect("No framework options provided");

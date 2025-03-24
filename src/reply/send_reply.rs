@@ -25,8 +25,8 @@ use crate::serenity_prelude as serenity;
 /// ).await?;
 /// # Ok(()) }
 /// ```
-pub async fn send_reply<'ctx, U: Send + Sync + 'static, E>(
-    ctx: crate::Context<'ctx, U, E>,
+pub async fn send_reply<'ctx, T: Send + Sync + 'static, E>(
+    ctx: crate::Context<'ctx, T, E>,
     builder: crate::CreateReply<'_>,
 ) -> Result<crate::ReplyHandle<'ctx>, serenity::Error> {
     Ok(match ctx {
@@ -40,8 +40,8 @@ pub async fn send_reply<'ctx, U: Send + Sync + 'static, E>(
 /// Shorthand of [`send_reply`] for text-only messages
 ///
 /// Note: panics when called in an autocomplete context!
-pub async fn say_reply<'ctx, 'arg, U: Send + Sync + 'static, E>(
-    ctx: crate::Context<'ctx, U, E>,
+pub async fn say_reply<'ctx, 'arg, T: Send + Sync + 'static, E>(
+    ctx: crate::Context<'ctx, T, E>,
     text: impl Into<Cow<'arg, str>>,
 ) -> Result<crate::ReplyHandle<'ctx>, serenity::Error> {
     send_reply(ctx, crate::CreateReply::default().content(text)).await
@@ -53,8 +53,8 @@ pub async fn say_reply<'ctx, 'arg, U: Send + Sync + 'static, E>(
 /// [followup](serenity::CommandInteraction::create_followup) is sent.
 ///
 /// No-op if autocomplete context
-pub async fn send_application_reply<'ctx, U: Send + Sync + 'static, E>(
-    ctx: crate::ApplicationContext<'ctx, U, E>,
+pub async fn send_application_reply<'ctx, T: Send + Sync + 'static, E>(
+    ctx: crate::ApplicationContext<'ctx, T, E>,
     builder: crate::CreateReply<'_>,
 ) -> Result<crate::ReplyHandle<'ctx>, serenity::Error> {
     let builder = ctx.reply_builder(builder);
@@ -98,8 +98,8 @@ pub async fn send_application_reply<'ctx, U: Send + Sync + 'static, E>(
 }
 
 /// Prefix-specific reply function. For more details, see [`crate::send_reply`].
-pub async fn send_prefix_reply<U: Send + Sync + 'static, E>(
-    ctx: crate::PrefixContext<'_, U, E>,
+pub async fn send_prefix_reply<T: Send + Sync + 'static, E>(
+    ctx: crate::PrefixContext<'_, T, E>,
     builder: crate::CreateReply<'_>,
 ) -> Result<Box<serenity::Message>, serenity::Error> {
     let builder = ctx.reply_builder(builder);

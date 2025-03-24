@@ -24,9 +24,9 @@ use crate::{CreateReply, serenity_prelude as serenity, serenity_prelude::CreateA
 /// }
 /// # };
 /// ```
-pub async fn on_error<U, E>(error: crate::FrameworkError<'_, U, E>) -> Result<(), serenity::Error>
+pub async fn on_error<T, E>(error: crate::FrameworkError<'_, T, E>) -> Result<(), serenity::Error>
 where
-    U: Send + Sync + 'static,
+    T: Send + Sync + 'static,
     E: std::fmt::Display + std::fmt::Debug,
 {
     match error {

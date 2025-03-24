@@ -8,19 +8,19 @@ use crate::serenity_prelude as serenity;
 /// These errors are handled with the [`crate::FrameworkOptions::on_error`] callback
 #[derive(derivative::Derivative)]
 #[derivative(Debug)]
-pub enum FrameworkError<'a, U, E> {
+pub enum FrameworkError<'a, T, E> {
     /// Error occurred during command execution
     #[non_exhaustive]
     Command {
         /// Error which was thrown in the command code
         error: E,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked without specifying a subcommand, but the command has `subcommand_required` set
     SubcommandRequired {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Panic occurred at any phase of command execution after constructing the `crate::Context`.
     ///
@@ -38,7 +38,7 @@ pub enum FrameworkError<'a, U, E> {
         /// would make [`FrameworkError`] not [`Sync`] anymore.
         payload: Option<String>,
         /// Command context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// A command argument failed to parse from the Discord message or interaction content
     #[non_exhaustive]
@@ -48,7 +48,7 @@ pub enum FrameworkError<'a, U, E> {
         /// If applicable, the input on which parsing failed
         input: Option<String>,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Expected a certain argument type at a certain position in the unstructured list of
     /// arguments, but found something else.
@@ -60,7 +60,7 @@ pub enum FrameworkError<'a, U, E> {
         /// Developer-readable description of the type mismatch
         description: &'static str,
         /// General context
-        ctx: crate::ApplicationContext<'a, U, E>,
+        ctx: crate::ApplicationContext<'a, T, E>,
     },
     /// Command was invoked before its cooldown expired
     #[non_exhaustive]
@@ -68,7 +68,7 @@ pub enum FrameworkError<'a, U, E> {
         /// Time until the command may be invoked for the next time in the given context
         remaining_cooldown: std::time::Duration,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked but the bot is lacking the permissions specified in
     /// [`crate::Command::required_bot_permissions`]
@@ -77,7 +77,7 @@ pub enum FrameworkError<'a, U, E> {
         /// Which permissions in particular the bot is lacking for this command
         missing_permissions: serenity::Permissions,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked but the user is lacking the permissions specified in
     /// [`crate::Command::required_permissions`]
@@ -87,38 +87,38 @@ pub enum FrameworkError<'a, U, E> {
         /// permissions failed
         missing_permissions: Option<serenity::Permissions>,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// The command was invoked, but an error occurred while fetching the necessary information to
     /// verify permissions.
     #[non_exhaustive]
     PermissionFetchFailed {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// A non-owner tried to invoke an owners-only command
     #[non_exhaustive]
     NotAnOwner {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked but the channel was a DM channel
     #[non_exhaustive]
     GuildOnly {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked but the channel was a non-DM channel
     #[non_exhaustive]
     DmOnly {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Command was invoked but the channel wasn't a NSFW channel
     #[non_exhaustive]
     NsfwOnly {
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// Provided pre-command check either errored, or returned false, so command execution aborted
     #[non_exhaustive]
@@ -127,7 +127,7 @@ pub enum FrameworkError<'a, U, E> {
         /// false, this field is None
         error: Option<E>,
         /// General context
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
     },
     /// [`crate::PrefixFrameworkOptions::dynamic_prefix`] or
     /// [`crate::PrefixFrameworkOptions::stripped_dynamic_prefix`] returned an error
@@ -137,7 +137,7 @@ pub enum FrameworkError<'a, U, E> {
         error: E,
         /// General context
         #[derivative(Debug = "ignore")]
-        ctx: crate::PartialContext<'a, U, E>,
+        ctx: crate::PartialContext<'a, T, E>,
         /// Message which the dynamic prefix callback was evaluated upon
         msg: &'a serenity::Message,
     },
@@ -154,7 +154,7 @@ pub enum FrameworkError<'a, U, E> {
         msg_content: &'a str,
         /// Framework context
         #[derivative(Debug = "ignore")]
-        framework: crate::FrameworkContext<'a, U, E>,
+        framework: crate::FrameworkContext<'a, T, E>,
         /// See [`crate::Context::invocation_data`]
         #[derivative(Debug = "ignore")]
         invocation_data: &'a tokio::sync::Mutex<Box<dyn std::any::Any + Send + Sync>>,
@@ -166,7 +166,7 @@ pub enum FrameworkError<'a, U, E> {
     UnknownInteraction {
         /// Framework context
         #[derivative(Debug = "ignore")]
-        framework: crate::FrameworkContext<'a, U, E>,
+        framework: crate::FrameworkContext<'a, T, E>,
         /// The interaction in question
         interaction: &'a serenity::CommandInteraction,
     },
@@ -177,7 +177,7 @@ pub enum FrameworkError<'a, U, E> {
         error: E,
         /// Framework context
         #[derivative(Debug = "ignore")]
-        framework: crate::FrameworkContext<'a, U, E>,
+        framework: crate::FrameworkContext<'a, T, E>,
         /// The interaction in question
         msg: &'a serenity::Message,
     },
@@ -186,7 +186,7 @@ pub enum FrameworkError<'a, U, E> {
     __NonExhaustive(std::convert::Infallible),
 }
 
-impl<'a, U: Send + Sync + 'static, E> FrameworkError<'a, U, E> {
+impl<'a, T: Send + Sync + 'static, E> FrameworkError<'a, T, E> {
     /// Returns the [`serenity::Context`] of this error
     pub fn serenity_context(&self) -> &'a serenity::Context {
         match *self {
@@ -213,7 +213,7 @@ impl<'a, U: Send + Sync + 'static, E> FrameworkError<'a, U, E> {
     }
 
     /// Returns the [`crate::Context`] of this error, if it has one
-    pub fn ctx(&self) -> Option<crate::Context<'a, U, E>> {
+    pub fn ctx(&self) -> Option<crate::Context<'a, T, E>> {
         Some(match *self {
             Self::Command { ctx, .. } => ctx,
             Self::SubcommandRequired { ctx } => ctx,
@@ -238,7 +238,7 @@ impl<'a, U: Send + Sync + 'static, E> FrameworkError<'a, U, E> {
     }
 
     /// Calls the appropriate `on_error` function (command-specific or global) with this error
-    pub async fn handle(self, framework_options: &crate::FrameworkOptions<U, E>) {
+    pub async fn handle(self, framework_options: &crate::FrameworkOptions<T, E>) {
         let on_error = self
             .ctx()
             .and_then(|c| c.command().on_error)
@@ -249,13 +249,13 @@ impl<'a, U: Send + Sync + 'static, E> FrameworkError<'a, U, E> {
 
 /// Support functions for the macro, which can't create these #[non_exhaustive] enum variants
 #[doc(hidden)]
-impl<'a, U, E> FrameworkError<'a, U, E> {
-    pub fn new_command(ctx: crate::Context<'a, U, E>, error: E) -> Self {
+impl<'a, T, E> FrameworkError<'a, T, E> {
+    pub fn new_command(ctx: crate::Context<'a, T, E>, error: E) -> Self {
         Self::Command { error, ctx }
     }
 
     pub fn new_argument_parse(
-        ctx: crate::Context<'a, U, E>,
+        ctx: crate::Context<'a, T, E>,
         input: Option<String>,
         error: Box<dyn std::error::Error + Send + Sync>,
     ) -> Self {
@@ -263,7 +263,7 @@ impl<'a, U, E> FrameworkError<'a, U, E> {
     }
 
     pub fn new_command_structure_mismatch(
-        ctx: crate::ApplicationContext<'a, U, E>,
+        ctx: crate::ApplicationContext<'a, T, E>,
         description: &'static str,
     ) -> Self {
         Self::CommandStructureMismatch { description, ctx }
@@ -277,8 +277,8 @@ macro_rules! full_command_name {
     };
 }
 
-impl<U: Send + Sync + 'static, E: std::fmt::Display> std::fmt::Display
-    for FrameworkError<'_, U, E>
+impl<T: Send + Sync + 'static, E: std::fmt::Display> std::fmt::Display
+    for FrameworkError<'_, T, E>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -397,9 +397,9 @@ impl<U: Send + Sync + 'static, E: std::fmt::Display> std::fmt::Display
     }
 }
 
-impl<U, E> std::error::Error for FrameworkError<'_, U, E>
+impl<T, E> std::error::Error for FrameworkError<'_, T, E>
 where
-    U: std::fmt::Debug + Send + Sync + 'static,
+    T: std::fmt::Debug + Send + Sync + 'static,
     E: std::error::Error + 'static,
 {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {

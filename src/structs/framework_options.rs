@@ -5,24 +5,24 @@ use crate::{BoxFuture, serenity_prelude as serenity};
 /// Framework configuration
 #[derive(derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct FrameworkOptions<U, E> {
+pub struct FrameworkOptions<T, E> {
     /// List of commands in the framework
-    pub commands: Vec<crate::Command<U, E>>,
+    pub commands: Vec<crate::Command<T, E>>,
     /// Provide a callback to be invoked when any user code yields an error.
     #[derivative(Debug = "ignore")]
-    pub on_error: fn(crate::FrameworkError<'_, U, E>) -> BoxFuture<'_, ()>,
+    pub on_error: fn(crate::FrameworkError<'_, T, E>) -> BoxFuture<'_, ()>,
     /// Called before every command
     #[derivative(Debug = "ignore")]
-    pub pre_command: fn(crate::Context<'_, U, E>) -> BoxFuture<'_, ()>,
+    pub pre_command: fn(crate::Context<'_, T, E>) -> BoxFuture<'_, ()>,
     /// Called after every command if it was successful (returned Ok)
     #[derivative(Debug = "ignore")]
-    pub post_command: fn(crate::Context<'_, U, E>) -> BoxFuture<'_, ()>,
+    pub post_command: fn(crate::Context<'_, T, E>) -> BoxFuture<'_, ()>,
     /// Provide a callback to be invoked before every command. The command will only be executed
     /// if the callback returns true.
     ///
     /// If individual commands add their own check, both callbacks are run and must return true.
     #[derivative(Debug = "ignore")]
-    pub command_check: Option<fn(crate::Context<'_, U, E>) -> BoxFuture<'_, Result<bool, E>>>,
+    pub command_check: Option<fn(crate::Context<'_, T, E>) -> BoxFuture<'_, Result<bool, E>>>,
     /// If set to true, skips command checks if command was issued by [`FrameworkOptions::owners`]
     pub skip_checks_for_owners: bool,
     /// Default set of allowed mentions to use for all responses
@@ -35,7 +35,7 @@ pub struct FrameworkOptions<U, E> {
     #[derivative(Debug = "ignore")]
     pub reply_callback: Option<
         for<'ctx, 'arg> fn(
-            crate::Context<'ctx, U, E>,
+            crate::Context<'ctx, T, E>,
             crate::CreateReply<'arg>,
         ) -> crate::CreateReply<'arg>,
     >,
@@ -50,7 +50,7 @@ pub struct FrameworkOptions<U, E> {
     /// **If `cache` feature is disabled, this has no effect!**
     pub require_cache_for_guild_check: bool,
     /// Prefix command specific options.
-    pub prefix_options: crate::PrefixFrameworkOptions<U, E>,
+    pub prefix_options: crate::PrefixFrameworkOptions<T, E>,
     /// User IDs which are allowed to use owners_only commands
     pub owners: std::collections::HashSet<serenity::UserId>,
     /// If true, [`Self::owners`] is automatically initialized with the results of
@@ -70,9 +70,9 @@ pub struct FrameworkOptions<U, E> {
     pub __non_exhaustive: (),
 }
 
-impl<U, E> Default for FrameworkOptions<U, E>
+impl<T, E> Default for FrameworkOptions<T, E>
 where
-    U: Send + Sync + 'static,
+    T: Send + Sync + 'static,
     E: std::fmt::Display + std::fmt::Debug + Send,
 {
     fn default() -> Self {

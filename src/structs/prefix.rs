@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::{serenity_prelude as serenity, BoxFuture};
+use crate::{BoxFuture, serenity_prelude as serenity};
 
 /// The event that triggered a prefix command execution
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -23,7 +23,7 @@ pub enum MessageDispatchTrigger {
 /// Contains the trigger message, the Discord connection management stuff, and the user data.
 #[derive(derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct PrefixContext<'a, U, E> {
+pub struct PrefixContext<'a, T, E> {
     /// The invoking user message
     pub msg: &'a serenity::Message,
     /// Prefix used by the user to invoke this command
@@ -36,11 +36,11 @@ pub struct PrefixContext<'a, U, E> {
     ///
     /// Useful if you need the list of commands, for example for a custom help command
     #[derivative(Debug = "ignore")]
-    pub framework: crate::FrameworkContext<'a, U, E>,
+    pub framework: crate::FrameworkContext<'a, T, E>,
     /// If the invoked command was a subcommand, these are the parent commands, ordered top down.
-    pub parent_commands: &'a [&'a crate::Command<U, E>],
+    pub parent_commands: &'a [&'a crate::Command<T, E>],
     /// The command object which is the current command
-    pub command: &'a crate::Command<U, E>,
+    pub command: &'a crate::Command<T, E>,
     /// Custom user data carried across a single command invocation
     pub invocation_data: &'a tokio::sync::Mutex<Box<dyn std::any::Any + Send + Sync>>,
     /// How this command invocation was triggered
@@ -48,22 +48,22 @@ pub struct PrefixContext<'a, U, E> {
     /// The function that is called to execute the actual command
     #[derivative(Debug = "ignore")]
     pub action: fn(
-        PrefixContext<'_, U, E>,
-    ) -> crate::BoxFuture<'_, Result<(), crate::FrameworkError<'_, U, E>>>,
+        PrefixContext<'_, T, E>,
+    ) -> crate::BoxFuture<'_, Result<(), crate::FrameworkError<'_, T, E>>>,
 
     // #[non_exhaustive] forbids struct update syntax for ?? reason
     #[doc(hidden)]
     pub __non_exhaustive: (),
 }
 // manual Copy+Clone implementations because Rust is getting confused about the type parameter
-impl<U, E> Clone for PrefixContext<'_, U, E> {
+impl<T, E> Clone for PrefixContext<'_, T, E> {
     fn clone(&self) -> Self {
         *self
     }
 }
-impl<U, E> Copy for PrefixContext<'_, U, E> {}
-impl<U, E> crate::_GetGenerics for PrefixContext<'_, U, E> {
-    type U = U;
+impl<T, E> Copy for PrefixContext<'_, T, E> {}
+impl<T, E> crate::_GetGenerics for PrefixContext<'_, T, E> {
+    type T = T;
     type E = E;
 }
 
@@ -81,7 +81,7 @@ pub enum Prefix {
 /// Prefix-specific framework configuration
 #[derive(derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct PrefixFrameworkOptions<U, E> {
+pub struct PrefixFrameworkOptions<T, E> {
     /// The main bot prefix. Can be set to None if the bot supports only
     /// [dynamic prefixes](Self::dynamic_prefix).
     pub prefix: Option<Cow<'static, str>>,
@@ -96,7 +96,7 @@ pub struct PrefixFrameworkOptions<U, E> {
     /// For more advanced dynamic prefixes, see [`Self::stripped_dynamic_prefix`]
     #[derivative(Debug = "ignore")]
     pub dynamic_prefix: Option<
-        fn(crate::PartialContext<'_, U, E>) -> BoxFuture<'_, Result<Option<Cow<'static, str>>, E>>,
+        fn(crate::PartialContext<'_, T, E>) -> BoxFuture<'_, Result<Option<Cow<'static, str>>, E>>,
     >,
     /// Callback invoked on every message to strip the prefix off an incoming message.
     ///
@@ -117,7 +117,7 @@ pub struct PrefixFrameworkOptions<U, E> {
         for<'a> fn(
             &'a serenity::Context,
             &'a serenity::Message,
-            std::sync::Arc<U>,
+            std::sync::Arc<T>,
         ) -> BoxFuture<'a, Result<Option<(&'a str, &'a str)>, E>>,
     >,
     /// Treat a bot mention (a ping) like a prefix
@@ -152,7 +152,7 @@ pub struct PrefixFrameworkOptions<U, E> {
     /// is not a command
     pub non_command_message: Option<
         for<'a> fn(
-            &'a crate::FrameworkContext<'a, U, E>,
+            &'a crate::FrameworkContext<'a, T, E>,
             &'a serenity::Message,
         ) -> crate::BoxFuture<'a, Result<(), E>>,
     >,
@@ -160,17 +160,17 @@ pub struct PrefixFrameworkOptions<U, E> {
     /// Whether to invoke help command when someone sends a message with just a bot mention
     pub help_when_mentioned: bool,
     /// The bot's general help command. Currently used for [`Self::help_when_mentioned`].
-    pub help_commmand: Option<Command<U, E>>,
+    pub help_commmand: Option<Command<T, E>>,
     // /// The bot's help command for individial commands. Currently used when a command group without
     // /// any specific subcommand is invoked. This command is expected to take the command name as a
     // /// single parameter
-    // pub command_specific_help_commmand: Option<Command<U, E>>, */
+    // pub command_specific_help_commmand: Option<Command<T, E>>, */
     // #[non_exhaustive] forbids struct update syntax for ?? reason
     #[doc(hidden)]
     pub __non_exhaustive: (),
 }
 
-impl<U, E> Default for PrefixFrameworkOptions<U, E> {
+impl<T, E> Default for PrefixFrameworkOptions<T, E> {
     fn default() -> Self {
         Self {
             prefix: None,

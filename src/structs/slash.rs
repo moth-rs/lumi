@@ -2,7 +2,7 @@
 
 use std::{borrow::Cow, collections::HashMap};
 
-use crate::{serenity_prelude as serenity, BoxFuture};
+use crate::{BoxFuture, serenity_prelude as serenity};
 
 use super::{CowStr, CowVec};
 
@@ -18,7 +18,7 @@ pub enum CommandInteractionType {
 /// Application command specific context passed to command invocations.
 #[derive(derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct ApplicationContext<'a, U, E> {
+pub struct ApplicationContext<'a, T, E> {
     /// The interaction which triggered this command execution.
     pub interaction: &'a serenity::CommandInteraction,
     /// The type of the interaction which triggered this command execution.
@@ -37,29 +37,29 @@ pub struct ApplicationContext<'a, U, E> {
     ///
     /// Useful if you need the list of commands, for example for a custom help command
     #[derivative(Debug = "ignore")]
-    pub framework: crate::FrameworkContext<'a, U, E>,
+    pub framework: crate::FrameworkContext<'a, T, E>,
     /// If the invoked command was a subcommand, these are the parent commands, ordered top down.
-    pub parent_commands: &'a [&'a crate::Command<U, E>],
+    pub parent_commands: &'a [&'a crate::Command<T, E>],
     /// The command object which is the current command
-    pub command: &'a crate::Command<U, E>,
+    pub command: &'a crate::Command<T, E>,
     /// Custom user data carried across a single command invocation
     pub invocation_data: &'a tokio::sync::Mutex<Box<dyn std::any::Any + Send + Sync>>,
     // #[non_exhaustive] forbids struct update syntax for ?? reason
     #[doc(hidden)]
     pub __non_exhaustive: (),
 }
-impl<U, E> Clone for ApplicationContext<'_, U, E> {
+impl<T, E> Clone for ApplicationContext<'_, T, E> {
     fn clone(&self) -> Self {
         *self
     }
 }
-impl<U, E> Copy for ApplicationContext<'_, U, E> {}
-impl<U, E> crate::_GetGenerics for ApplicationContext<'_, U, E> {
-    type U = U;
+impl<T, E> Copy for ApplicationContext<'_, T, E> {}
+impl<T, E> crate::_GetGenerics for ApplicationContext<'_, T, E> {
+    type T = T;
     type E = E;
 }
 
-impl<U, E> ApplicationContext<'_, U, E> {
+impl<T, E> ApplicationContext<'_, T, E> {
     /// See [`crate::Context::defer()`]
     pub async fn defer_response(&self, ephemeral: bool) -> Result<(), serenity::Error> {
         if !self
@@ -83,28 +83,28 @@ impl<U, E> ApplicationContext<'_, U, E> {
 /// Possible actions that a context menu entry can have
 #[derive(derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub enum ContextMenuCommandAction<U, E> {
+pub enum ContextMenuCommandAction<T, E> {
     /// Context menu entry on a user
     User(
         #[derivative(Debug = "ignore")]
         fn(
-            ApplicationContext<'_, U, E>,
+            ApplicationContext<'_, T, E>,
             serenity::User,
-        ) -> BoxFuture<'_, Result<(), crate::FrameworkError<'_, U, E>>>,
+        ) -> BoxFuture<'_, Result<(), crate::FrameworkError<'_, T, E>>>,
     ),
     /// Context menu entry on a message
     Message(
         #[derivative(Debug = "ignore")]
         fn(
-            ApplicationContext<'_, U, E>,
+            ApplicationContext<'_, T, E>,
             serenity::Message,
-        ) -> BoxFuture<'_, Result<(), crate::FrameworkError<'_, U, E>>>,
+        ) -> BoxFuture<'_, Result<(), crate::FrameworkError<'_, T, E>>>,
     ),
     #[doc(hidden)]
     __NonExhaustive,
 }
-impl<U, E> Copy for ContextMenuCommandAction<U, E> {}
-impl<U, E> Clone for ContextMenuCommandAction<U, E> {
+impl<T, E> Copy for ContextMenuCommandAction<T, E> {}
+impl<T, E> Clone for ContextMenuCommandAction<T, E> {
     fn clone(&self) -> Self {
         *self
     }
@@ -124,7 +124,7 @@ pub struct CommandParameterChoice {
 /// A single parameter of a [`crate::Command`]
 #[derive(Clone, derivative::Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct CommandParameter<U, E> {
+pub struct CommandParameter<T, E> {
     /// Name of this command parameter
     pub name: CowStr,
     /// Localized names with locale string as the key (slash-only)
@@ -159,7 +159,7 @@ pub struct CommandParameter<U, E> {
     #[derivative(Debug = "ignore")]
     pub autocomplete_callback: Option<
         for<'a> fn(
-            crate::ApplicationContext<'a, U, E>,
+            crate::ApplicationContext<'a, T, E>,
             &'a str,
         ) -> BoxFuture<'a, serenity::CreateAutocompleteResponse<'a>>,
     >,
@@ -167,7 +167,7 @@ pub struct CommandParameter<U, E> {
     pub __non_exhaustive: (),
 }
 
-impl<U, E> CommandParameter<U, E> {
+impl<T, E> CommandParameter<T, E> {
     /// Generates a slash command parameter builder from this [`CommandParameter`] instance. This
     /// can be used to register the command on Discord's servers
     pub fn create_as_slash_command_option(&self) -> Option<serenity::CreateCommandOption<'static>> {

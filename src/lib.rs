@@ -443,9 +443,9 @@ mod tests {
     fn _assert_send_sync<T: Send + Sync>() {}
 
     fn _test_framework_error_send_sync<
-        U: Send + Sync + 'static + 'static,
+        T: Send + Sync + 'static + 'static,
         E: Send + Sync + 'static,
     >() {
-        _assert_send_sync::<crate::FrameworkError<'_, U, E>>();
+        _assert_send_sync::<crate::FrameworkError<'_, T, E>>();
     }
 }

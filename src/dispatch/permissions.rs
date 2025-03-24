@@ -24,13 +24,13 @@ impl PermissionsInfo {
 }
 
 /// Retrieves the permissions for the context author and the bot.
-async fn get_author_and_bot_permissions<U, E>(
-    ctx: crate::Context<'_, U, E>,
+async fn get_author_and_bot_permissions<T, E>(
+    ctx: crate::Context<'_, T, E>,
     skip_author: bool,
     skip_bot: bool,
 ) -> Option<PermissionsInfo>
 where
-    U: Send + Sync + 'static,
+    T: Send + Sync + 'static,
 {
     // No permission checks in DMs.
     let Some(guild_id) = ctx.guild_id() else {
@@ -50,13 +50,13 @@ where
 /// Retrieves the set of permissions that are lacking, relative to the given required permission set
 ///
 /// Returns None if permissions couldn't be retrieved.
-pub(super) async fn calculate_missing<U, E>(
-    ctx: crate::Context<'_, U, E>,
+pub(super) async fn calculate_missing<T, E>(
+    ctx: crate::Context<'_, T, E>,
     author_required_permissions: serenity::Permissions,
     bot_required_permissions: serenity::Permissions,
 ) -> Option<(serenity::Permissions, serenity::Permissions)>
 where
-    U: Send + Sync + 'static,
+    T: Send + Sync + 'static,
 {
     // If both user and bot are None, return empty permissions
     if author_required_permissions.is_empty() && bot_required_permissions.is_empty() {

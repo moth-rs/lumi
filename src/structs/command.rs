@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::{serenity_prelude as serenity, BoxFuture};
+use crate::{BoxFuture, serenity_prelude as serenity};
 
 use super::{CowStr, CowVec};
 
@@ -13,30 +13,30 @@ const DEFAULT_NAME: CowStr = Cow::Borrowed("A slash command");
 /// prefix and application commands
 #[derive(derivative::Derivative)]
 #[derivative(Default(bound = ""), Debug(bound = ""))]
-pub struct Command<U, E> {
+pub struct Command<T, E> {
     // =============
     /// Callback to execute when this command is invoked in a prefix context
     #[derivative(Debug = "ignore")]
     pub prefix_action: Option<
         for<'a> fn(
-            crate::PrefixContext<'a, U, E>,
-        ) -> BoxFuture<'a, Result<(), crate::FrameworkError<'a, U, E>>>,
+            crate::PrefixContext<'a, T, E>,
+        ) -> BoxFuture<'a, Result<(), crate::FrameworkError<'a, T, E>>>,
     >,
     /// Callback to execute when this command is invoked in a slash context
     #[derivative(Debug = "ignore")]
     pub slash_action: Option<
         for<'a> fn(
-            crate::ApplicationContext<'a, U, E>,
-        ) -> BoxFuture<'a, Result<(), crate::FrameworkError<'a, U, E>>>,
+            crate::ApplicationContext<'a, T, E>,
+        ) -> BoxFuture<'a, Result<(), crate::FrameworkError<'a, T, E>>>,
     >,
     /// Callback to execute when this command is invoked in a context menu context
     ///
     /// The enum variant shows which Discord item this context menu command works on
-    pub context_menu_action: Option<crate::ContextMenuCommandAction<U, E>>,
+    pub context_menu_action: Option<crate::ContextMenuCommandAction<T, E>>,
 
     // ============= Command type agnostic data
     /// Subcommands of this command, if any
-    pub subcommands: Vec<Command<U, E>>,
+    pub subcommands: Vec<Command<T, E>>,
     /// Require a subcommand to be invoked
     pub subcommand_required: bool,
     /// Main name of the command. Aliases (prefix-only) can be set in [`Self::aliases`].
@@ -113,14 +113,14 @@ pub struct Command<U, E> {
     pub nsfw_only: bool,
     /// Command-specific override for [`crate::FrameworkOptions::on_error`]
     #[derivative(Debug = "ignore")]
-    pub on_error: Option<fn(crate::FrameworkError<'_, U, E>) -> BoxFuture<'_, ()>>,
+    pub on_error: Option<fn(crate::FrameworkError<'_, T, E>) -> BoxFuture<'_, ()>>,
     /// If any of these functions returns false, this command will not be executed.
     #[derivative(Debug = "ignore")]
-    pub checks: Vec<fn(crate::Context<'_, U, E>) -> BoxFuture<'_, Result<bool, E>>>,
+    pub checks: Vec<fn(crate::Context<'_, T, E>) -> BoxFuture<'_, Result<bool, E>>>,
     /// List of parameters for this command
     ///
     /// Used for registering and parsing slash commands. Can also be used in help commands
-    pub parameters: Vec<crate::CommandParameter<U, E>>,
+    pub parameters: Vec<crate::CommandParameter<T, E>>,
     /// Arbitrary data, useful for storing custom metadata about your commands
     #[derivative(Default(value = "Box::new(())"))]
     pub custom_data: Box<dyn std::any::Any + Send + Sync>,
@@ -150,14 +150,14 @@ pub struct Command<U, E> {
     pub __non_exhaustive: (),
 }
 
-impl<U, E> PartialEq for Command<U, E> {
+impl<T, E> PartialEq for Command<T, E> {
     fn eq(&self, other: &Self) -> bool {
         std::ptr::eq(self, other)
     }
 }
-impl<U, E> Eq for Command<U, E> {}
+impl<T, E> Eq for Command<T, E> {}
 
-impl<U, E> Command<U, E> {
+impl<T, E> Command<T, E> {
     /// Serializes this Command into an application command option, which is the form which Discord
     /// requires subcommands to be in
     fn create_as_subcommand(&self) -> Option<serenity::CreateCommandOption<'static>> {

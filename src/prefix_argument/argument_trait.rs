@@ -129,7 +129,7 @@ impl_popargument_via_argumentconvert!(
     i8, i16, i32, i64,
     serenity::UserId, serenity::User, serenity::Member,
     serenity::MessageId, serenity::Message,
-    serenity::ChannelId, serenity::Channel, serenity::GuildChannel,
+    serenity::GenericChannelId, serenity::Channel, serenity::GuildChannel,
     serenity::EmojiId, serenity::Emoji,
     serenity::RoleId, serenity::Role
 );

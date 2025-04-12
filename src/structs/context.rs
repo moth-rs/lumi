@@ -190,7 +190,7 @@ context_methods! {
 
     /// Return the channel ID of this context
     (channel_id self)
-    (pub fn channel_id(self) -> serenity::ChannelId) {
+    (pub fn channel_id(self) -> serenity::GenericChannelId) {
         match self {
             Self::Application(ctx) => ctx.interaction.channel_id,
             Self::Prefix(ctx) => ctx.msg.channel_id,
@@ -207,9 +207,9 @@ context_methods! {
     }
 
     /// Return the guild channel of this context, if we are inside a guild.
-    await (guild_channel self)
-    (pub async fn guild_channel(self) -> Option<serenity::GuildChannel>) {
-        self.channel_id().to_guild_channel(self.serenity_context(), self.guild_id()).await.ok()
+    await (channel self)
+    (pub async fn channel(self) -> Option<serenity::Channel>) {
+        self.channel_id().to_channel(self.serenity_context(), self.guild_id()).await.ok()
     }
 
     // Doesn't fit in with the rest of the functions here but it's convenient
@@ -391,7 +391,7 @@ context_methods! {
                         serenity::ResolvedValue::Number(x) => write!(string, "{}", x),
                         serenity::ResolvedValue::String(x) => write!(string, "{}", x),
                         serenity::ResolvedValue::Channel(x) => {
-                            write!(string, "#{}", x.name.as_deref().unwrap_or(""))
+                            write!(string, "#{}", x.base().name.as_deref().unwrap_or(""))
                         }
                         serenity::ResolvedValue::Role(x) => write!(string, "@{}", x.name),
                         serenity::ResolvedValue::User(x, _) => {
@@ -607,7 +607,7 @@ pub struct PartialContext<'a, T, E> {
     /// ID of the guild, if not invoked in DMs
     pub guild_id: Option<serenity::GuildId>,
     /// ID of the invocation channel
-    pub channel_id: serenity::ChannelId,
+    pub channel_id: serenity::GenericChannelId,
     /// ID of the invocation author
     pub author: &'a serenity::User,
     /// Useful if you need the list of commands, for example for a custom help command

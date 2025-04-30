@@ -33,7 +33,7 @@ default = ["serenity/rustls_backend", "handle_panics"]
 # This feature exists because some users want to disable the mere possibility of catching panics at
 # build time for peace of mind.
 handle_panics = []
-
+unstable = ["serenity/unstable"]
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(doc_nightly)"] }
 

@@ -12,10 +12,14 @@ pub struct CreateReply<'a> {
     embeds: Vec<serenity::CreateEmbed<'a>>,
     attachments: Vec<serenity::CreateAttachment<'a>>,
     pub(crate) ephemeral: Option<bool>,
+    #[cfg(feature = "unstable")]
+    components: Option<Cow<'a, [serenity::CreateComponent<'a>]>>,
+    #[cfg(not(feature = "unstable"))]
     components: Option<Cow<'a, [serenity::CreateActionRow<'a>]>>,
     pub(crate) allowed_mentions: Option<serenity::CreateAllowedMentions<'a>>,
     poll: Option<serenity::CreatePoll<'a, serenity::builder::create_poll::Ready>>,
     reply: bool,
+    flags: Option<serenity::MessageFlags>,
 }
 
 impl<'a> CreateReply<'a> {
@@ -38,9 +42,25 @@ impl<'a> CreateReply<'a> {
         self
     }
 
+    /// Sets the flags for the message.
+    pub fn flags(mut self, flags: serenity::MessageFlags) -> Self {
+        self.flags = Some(flags);
+        self
+    }
+
+    #[cfg(feature = "unstable")]
+    pub fn components(
+        mut self,
+        components: impl Into<Cow<'a, [serenity::CreateComponent<'a>]>>,
+    ) -> Self {
+        self.components = Some(components.into());
+        self
+    }
+
     /// Set components (buttons and select menus) for this message.
     ///
     /// Any previously set components will be overwritten.
+    #[cfg(not(feature = "unstable"))]
     pub fn components(
         mut self,
         components: impl Into<Cow<'a, [serenity::CreateActionRow<'a>]>>,
@@ -112,6 +132,7 @@ impl<'a> CreateReply<'a> {
             ephemeral,
             allowed_mentions,
             poll,
+            flags,
             reply: _, // can't reply to a message in interactions
         } = self;
 
@@ -130,6 +151,9 @@ impl<'a> CreateReply<'a> {
         if let Some(poll) = poll {
             builder = builder.poll(poll);
         }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
+        }
 
         builder.add_files(attachments).embeds(embeds)
     }
@@ -147,6 +171,7 @@ impl<'a> CreateReply<'a> {
             ephemeral,
             allowed_mentions,
             poll,
+            flags,
             reply: _,
         } = self;
 
@@ -165,6 +190,9 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
+        }
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
         }
 
         builder.add_files(attachments)
@@ -185,6 +213,7 @@ impl<'a> CreateReply<'a> {
             // cannot edit polls.
             poll: _,
             reply: _,
+            flags: _,
         } = self;
 
         if let Some(content) = content {
@@ -218,6 +247,7 @@ impl<'a> CreateReply<'a> {
             // cannot edit polls.
             poll: _,
             reply: _, // can't edit reference message afterwards
+            flags,
         } = self;
 
         let mut attachments_builder = serenity::EditAttachments::new();
@@ -233,6 +263,10 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(components) = components {
             builder = builder.components(components);
+        }
+
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
         }
 
         builder.embeds(embeds).attachments(attachments_builder)
@@ -252,6 +286,7 @@ impl<'a> CreateReply<'a> {
             allowed_mentions,
             poll,
             reply,
+            flags,
         } = self;
 
         let mut builder = serenity::CreateMessage::new();
@@ -269,6 +304,10 @@ impl<'a> CreateReply<'a> {
         }
         if let Some(poll) = poll {
             builder = builder.poll(poll);
+        }
+
+        if let Some(flags) = flags {
+            builder = builder.flags(flags);
         }
 
         for attachment in attachments {

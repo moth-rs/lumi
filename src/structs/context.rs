@@ -496,8 +496,8 @@ context_methods! {
     await (ping self)
     (pub async fn ping(self) -> std::time::Duration) {
         let zero = std::time::Duration::ZERO;
-        let Ok(runner) = self.serenity_context().runner_info.lock() else { return zero };
-        runner.latency.unwrap_or(zero)
+        let Some(runner) = self.serenity_context().runners.get(&self.serenity_context().shard_id) else { return zero };
+        runner.0.latency.unwrap_or(zero)
     }
 }
 
